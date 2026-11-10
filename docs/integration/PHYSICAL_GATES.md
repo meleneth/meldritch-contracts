@@ -18,11 +18,13 @@ Automated integration passed for the revisions in `integration.lock.json`:
 
 Attached-device inventory found an Arturia MicroLab mk3, APC mini mk2, and
 Stream Deck XL. `self-reproducing-playground` opened the MicroLab input and
-ran its real hardware-enabled application path. The shutdown gate did **not**
-pass: the engine reported two audio buffer underrun/overrun events. Visual LED
-reset, physical gestures, disconnect/reconnect, and listening checks were not
-observed by a human and remain unverified. No VST3 integration test or plugin
-lifecycle session was run.
+ran its real hardware-enabled application path. A debug build reported two
+audio buffer underrun/overrun events, which is why the integration wrappers now
+require a release build. The same bounded startup and shutdown through the
+release-only `bin/run` wrapper completed with no reported xruns and exit code
+zero. Visual LED reset, physical gestures, disconnect/reconnect, sustained-load
+listening, and latency checks were not observed by a human and remain
+unverified. No VST3 integration test or plugin lifecycle session was run.
 
 Automated and simulated checks do not constitute physical verification. The
 following gates remain release blockers until they pass on the designated
@@ -35,8 +37,9 @@ Linux audio workstation and are recorded against `integration.lock.json`:
 - Native VST3 instrument load, editor attach/detach, state restoration, and
   host-wide serialized lifecycle construction.
 - Parallel DSP throughput and dependency-level scheduler regression baseline.
-- Full representative-load startup/shutdown with no xruns or stale audio,
-  MIDI, APC, or Stream Deck state. The current checkpoint failed on two xruns.
+- Sustained representative-load operation with no xruns or stale audio, MIDI,
+  APC, or Stream Deck state. Bounded release startup/shutdown passed; the debug
+  binary is deliberately unsupported by the integration runner.
 
 The VST3 integration suite is intentionally feature-gated in the engine and is
 barred from default test/CI commands. It may be invoked only as part of an
