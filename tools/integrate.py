@@ -107,6 +107,9 @@ def run_system(checkouts: dict[str, Path], application: str) -> None:
         raise SystemExit(f"application does not exist: {app}")
     environment = os.environ.copy()
     environment["MELDRITCH_UI_DIST"] = str(ui_dist)
+    environment["MELDRITCH_LUA_CATALOG"] = str(
+        checkouts["meldritch-lua"] / "libraries/catalog.json"
+    )
     process = subprocess.Popen([str(binary), "perform", str(app)], env=environment)
 
     def stop(_signum=None, _frame=None):

@@ -1,13 +1,13 @@
 {
   "integration": "fracture-2026-11-10",
   "components": {
-    "meldritch": {"revision": "86bcb23f146b05178398c558464c9da346bf79c0"},
-    "meldritch-contracts": {"revision": "982abf14c3c05fac157dda7a30849a99d3ef42bd", "lua_host_api": "1.0.0", "web_protocol": "1.0.0"},
-    "meldritch-lua": {"revision": "f88e6bc54c42308619cf5b9c3c3c757770987a19"},
-    "meldritch-ui": {"revision": "33f0c236484ce5f69751513b2dddd3cfb92c575b"}
+    "meldritch": {"revision": "43f75a917a03066dfbf71f321f27f63e686ca291"},
+    "meldritch-contracts": {"revision": "a3d9323d30eb2847b5487d8c97e34531e1ccba03", "lua_host_api": "1.0.0", "web_protocol": "1.0.0"},
+    "meldritch-lua": {"revision": "2947fe8889190295cfe111d93be22edf0ac17f50"},
+    "meldritch-ui": {"revision": "6a64fe46e22b9c9d8e5f04d825ca6253071b170b"}
   },
   "artifacts": {
-    "meldritch-lua-contract-1.0.0.tar.gz": "36a50427fafc8e119d01d5b383b650759b2e1e81ce0bbf18594f42ceaf84e769",
+    "meldritch-lua-contract-1.0.0.tar.gz": "5e510ff81b5cb7500bdcdedbb63c1634e4bd8a4d0703457b81519d5cecdb73d2",
     "meldritch-web-contract-1.0.0.tar.gz": "05febf5f3ffe37c97c9641416652f7d83809fc68ac7a6d75ba3aa76c8cc7cb5b"
   }
 }

@@ -22,9 +22,11 @@ The wrappers use Bash strict mode, quote every repository path, perform no
 deletion, and reject missing Git checkouts. `run` accepts zero or one
 application name and defaults to `network-performance`. `build` always creates
 the release engine, and `run` refuses to use a debug binary because the debug
-DSP path can underrun under representative workloads. To use a non-adjacent
-layout, set `MELDRITCH_ENGINE_REPO`, `MELDRITCH_LUA_REPO`, and
-`MELDRITCH_UI_REPO` to absolute checkout paths.
+DSP path can underrun under representative workloads. `run` also supplies the
+pinned Lua repository's explicit `libraries/catalog.json`; the engine has no
+embedded author-library fallback. To use a non-adjacent layout, set
+`MELDRITCH_ENGINE_REPO`, `MELDRITCH_LUA_REPO`, and `MELDRITCH_UI_REPO` to
+absolute checkout paths.
 
 ## Direct orchestrator use
 
