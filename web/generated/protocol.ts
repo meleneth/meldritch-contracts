@@ -2,6 +2,10 @@
 // Contract: meldritch-web-protocol 1.0.0
 // Source: web/schemas/protocol.schema.json sha256:29d47589e8c70cb83c7def872ba9bf495cdb0a6f4672cf49fddc9bb1ed4e0f37
 
+export const WEB_PROTOCOL_VERSION = "1.0.0" as const;
+export const WEB_PROTOCOL_RANGE = ">=1.0.0 <2.0.0" as const;
+export const WIRE_SCHEMA_VERSION = 3 as const;
+
 export type VersionRange = string;
 
 export interface Hello {
