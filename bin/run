@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)/_integration-common.sh"
+
+if (( $# > 1 )); then
+  printf 'usage: %s [APPLICATION]\n' "${0##*/}" >&2
+  exit 2
+fi
+
+readonly application="${1:-network-performance}"
+integration run --application "$application"

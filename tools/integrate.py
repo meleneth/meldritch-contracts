@@ -77,7 +77,7 @@ def verify(checkouts: dict[str, Path]) -> None:
 
 
 def build(checkouts: dict[str, Path]) -> None:
-    command(["cargo", "build", "-p", "meldritch2"], checkouts["meldritch"])
+    command(["cargo", "build", "--release", "-p", "meldritch2"], checkouts["meldritch"])
     command(["npm", "ci"], checkouts["meldritch-ui"])
     command(["npm", "run", "build"], checkouts["meldritch-ui"])
 
@@ -96,13 +96,13 @@ def test(checkouts: dict[str, Path]) -> None:
 
 
 def run_system(checkouts: dict[str, Path], application: str) -> None:
-    binary = checkouts["meldritch"] / "target/debug/meldritch2"
+    binary = checkouts["meldritch"] / "target/release/meldritch2"
     ui_dist = checkouts["meldritch-ui"] / "dist"
     app = Path(application)
     if not app.is_absolute():
         app = checkouts["meldritch-lua"] / "applications" / app
     if not binary.is_file() or not ui_dist.is_dir():
-        raise SystemExit("build artifacts missing; run the build action first")
+        raise SystemExit("release engine or UI build missing; run the build action first")
     if not app.exists():
         raise SystemExit(f"application does not exist: {app}")
     environment = os.environ.copy()
