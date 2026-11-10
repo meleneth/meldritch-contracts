@@ -174,10 +174,44 @@ def validate_web() -> int:
     return count
 
 
+def validate_integration_lock() -> None:
+    lock = load(ROOT / "integration.lock.json")
+    versions = load(ROOT / "compatibility/versions.yaml")
+    expected_components = {
+        "meldritch",
+        "meldritch-contracts",
+        "meldritch-lua",
+        "meldritch-ui",
+    }
+    if set(lock.get("components", {})) != expected_components:
+        raise Invalid("integration lock must name exactly the four repositories")
+    if not isinstance(lock.get("integration"), str) or not lock["integration"]:
+        raise Invalid("integration lock requires a nonempty integration identifier")
+    for name, component in lock["components"].items():
+        revision = component.get("revision", "")
+        if not re.fullmatch(r"[0-9a-f]{40}", revision):
+            raise Invalid(f"{name}: revision must be a full lowercase Git hash")
+    contract = lock["components"]["meldritch-contracts"]
+    if contract.get("lua_host_api") != versions["lua_host_api"]["current"]:
+        raise Invalid("integration lock Lua API version is not current")
+    if contract.get("web_protocol") != versions["web_protocol"]["current"]:
+        raise Invalid("integration lock Web protocol version is not current")
+    expected_artifacts = {
+        f"meldritch-lua-contract-{contract['lua_host_api']}.tar.gz",
+        f"meldritch-web-contract-{contract['web_protocol']}.tar.gz",
+    }
+    if set(lock.get("artifacts", {})) != expected_artifacts:
+        raise Invalid("integration lock must pin both published contract artifacts")
+    for artifact, digest in lock["artifacts"].items():
+        if not re.fullmatch(r"[0-9a-f]{64}", digest):
+            raise Invalid(f"{artifact}: checksum must be lowercase SHA-256")
+
+
 def main() -> int:
     try:
         lua_count = validate_lua()
         web_count = validate_web()
+        validate_integration_lock()
     except (Invalid, KeyError, json.JSONDecodeError) as error:
         print(f"contract validation failed: {error}", file=sys.stderr)
         return 1

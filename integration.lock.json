@@ -1,0 +1,13 @@
+{
+  "integration": "fracture-2026-11-10",
+  "components": {
+    "meldritch": {"revision": "86bcb23f146b05178398c558464c9da346bf79c0"},
+    "meldritch-contracts": {"revision": "982abf14c3c05fac157dda7a30849a99d3ef42bd", "lua_host_api": "1.0.0", "web_protocol": "1.0.0"},
+    "meldritch-lua": {"revision": "f88e6bc54c42308619cf5b9c3c3c757770987a19"},
+    "meldritch-ui": {"revision": "33f0c236484ce5f69751513b2dddd3cfb92c575b"}
+  },
+  "artifacts": {
+    "meldritch-lua-contract-1.0.0.tar.gz": "36a50427fafc8e119d01d5b383b650759b2e1e81ce0bbf18594f42ceaf84e769",
+    "meldritch-web-contract-1.0.0.tar.gz": "05febf5f3ffe37c97c9641416652f7d83809fc68ac7a6d75ba3aa76c8cc7cb5b"
+  }
+}
