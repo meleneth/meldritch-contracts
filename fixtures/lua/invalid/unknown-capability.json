@@ -1,0 +1,7 @@
+{
+  "name": "unknown-capability",
+  "version": "1.0.0",
+  "entry": "main.lua",
+  "lua_host_api": ">=1.0.0 <2.0.0",
+  "capabilities": ["imaginary.capability"]
+}

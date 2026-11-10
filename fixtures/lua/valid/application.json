@@ -1,0 +1,9 @@
+{
+  "name": "contract-fixture",
+  "version": "1.0.0",
+  "entry": "main.lua",
+  "lua_host_api": ">=1.0.0 <2.0.0",
+  "capabilities": ["graph.core", "sequencer.core"],
+  "libraries": [],
+  "assets": []
+}

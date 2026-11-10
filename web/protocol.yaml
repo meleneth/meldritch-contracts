@@ -1,0 +1,35 @@
+{
+  "contract": "meldritch-web-protocol",
+  "version": "1.0.0",
+  "wire_schema_version": 3,
+  "transport": {
+    "browser_configuration": "/api/browser-config",
+    "websocket_default": "/performance",
+    "encoding": "UTF-8 JSON text messages"
+  },
+  "lifecycle": [
+    "Client obtains browser configuration.",
+    "Client opens the configured WebSocket.",
+    "Client sends hello with a supported semantic-version range.",
+    "Server sends hello.accepted or protocol.incompatible and closes.",
+    "Client may authenticate with an opaque credential.",
+    "Server sends session and a full role-projected state.snapshot.",
+    "Commands and complete authoritative state.updated projections follow.",
+    "Reconnect repeats negotiation and full snapshot synchronization."
+  ],
+  "ordering": {
+    "epoch": "A changed epoch invalidates every revision and optimistic pending value from the prior engine session.",
+    "revision": "Within one epoch, clients accept only strictly increasing revisions.",
+    "schema_revision": "Changes when role-projected definitions change; a snapshot carries definitions.",
+    "updates": "state.updated contains complete current values, never a JSON patch. Skipped revisions are safe.",
+    "optimism": "Local feedback is unconfirmed and is cleared or replaced by the next authoritative projection."
+  },
+  "authority": {
+    "engine": ["sequencer state", "controls", "patterns", "notes", "presets", "transport", "audio telemetry"],
+    "lua_application": ["declarations", "role assignment", "semantic callbacks"],
+    "ui": ["ephemeral viewport and interaction state", "unconfirmed optimistic feedback"]
+  },
+  "authentication": "Opaque tokens map only to Lua-declared roles. Authorization is checked on every mutation.",
+  "limits": "Engine-configured body, message, connection, queue and timeout limits apply before control-owner dispatch.",
+  "schema": "schemas/protocol.schema.json"
+}

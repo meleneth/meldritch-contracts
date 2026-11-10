@@ -1,0 +1,14 @@
+[
+  {"type":"control.set","name":"cutoff","value":440},
+  {"type":"step.toggle","plane":"drums","control":"steps","step":3},
+  {"type":"trigger.fire","plane":"main","control":"fill"},
+  {"type":"note.create","plane":"notes","control":"roll","pattern":0,"step":0,"pitch":60,"velocity":100,"duration":2},
+  {"type":"note.update","plane":"notes","control":"roll","pattern":0,"id":1,"step":1,"pitch":62,"velocity":90,"duration":1,"legato":false},
+  {"type":"note.delete","plane":"notes","control":"roll","pattern":0,"id":1},
+  {"type":"drum.hit.toggle","plane":"drums","control":"grid","pattern":0,"row":"kick","step":0},
+  {"type":"drum.hit.velocity","plane":"drums","control":"grid","pattern":0,"row":"kick","step":0,"velocity":110},
+  {"type":"drum.mute","plane":"drums","control":"grid","row":"kick","muted":true},
+  {"type":"pattern.select","plane":"main","control":"patterns","pattern":1,"boundary":"bar"},
+  {"type":"adsr.set","plane":"main","control":"envelope","parameter":"attack","value":0.1},
+  {"type":"preset.select","plane":"main","control":"preset","preset":"bright"}
+]

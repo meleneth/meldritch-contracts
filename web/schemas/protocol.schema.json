@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://meldritch.dev/contracts/web/protocol.schema.json",
+  "title": "Meldritch Web protocol",
+  "$ref": "#/$defs/Message",
+  "$defs": {
+    "VersionRange": {"type": "string", "minLength": 1},
+    "Hello": {
+      "type": "object",
+      "required": ["type", "protocol"],
+      "properties": {"type": {"const": "hello"}, "protocol": {"$ref": "#/$defs/VersionRange"}, "client": {"type": "string"}},
+      "additionalProperties": false
+    },
+    "HelloAccepted": {
+      "type": "object",
+      "required": ["type", "protocol", "schema_version"],
+      "properties": {"type": {"const": "hello.accepted"}, "protocol": {"type": "string"}, "schema_version": {"const": 3}},
+      "additionalProperties": false
+    },
+    "ProtocolIncompatible": {
+      "type": "object",
+      "required": ["type", "supported", "requested", "error"],
+      "properties": {"type": {"const": "protocol.incompatible"}, "supported": {"type": "string"}, "requested": {"type": "string"}, "error": {"type": "string"}},
+      "additionalProperties": false
+    },
+    "Authenticate": {
+      "type": "object",
+      "required": ["type", "token"],
+      "properties": {"type": {"const": "authenticate"}, "token": {"type": "string"}},
+      "additionalProperties": false
+    },
+    "Session": {
+      "type": "object",
+      "required": ["type", "role"],
+      "properties": {"type": {"const": "session"}, "role": {"type": ["string", "null"]}},
+      "additionalProperties": false
+    },
+    "ErrorMessage": {
+      "type": "object",
+      "required": ["type", "error"],
+      "properties": {"type": {"const": "error"}, "error": {"type": "string"}, "code": {"type": "string"}},
+      "additionalProperties": false
+    },
+    "AccessLink": {
+      "type": "object", "required": ["credential", "role"],
+      "properties": {"credential": {"type": "string"}, "role": {"type": "string"}}, "additionalProperties": false
+    },
+    "AudioTelemetry": {
+      "type": "object",
+      "required": ["buffer_underruns", "stream_errors", "timed_note_errors", "first_stream_error", "sample_rate", "channels", "buffer_frames", "dsp_workers"],
+      "properties": {
+        "buffer_underruns": {"type": "integer", "minimum": 0}, "stream_errors": {"type": "integer", "minimum": 0},
+        "timed_note_errors": {"type": "integer", "minimum": 0}, "first_stream_error": {"type": ["string", "null"]},
+        "sample_rate": {"type": "integer", "minimum": 0}, "channels": {"type": "integer", "minimum": 0},
+        "buffer_frames": {"type": "integer", "minimum": 0}, "dsp_workers": {"type": "integer", "minimum": 0}
+      }, "additionalProperties": false
+    },
+    "DrumHit": {
+      "type": "object", "required": ["id", "step", "velocity", "duration"],
+      "properties": {"id": {"type": "integer", "minimum": 0}, "step": {"type": "integer", "minimum": 0}, "velocity": {"type": "integer", "minimum": 1, "maximum": 127}, "duration": {"type": "integer", "minimum": 1}}, "additionalProperties": false
+    },
+    "NoteEvent": {
+      "type": "object", "required": ["id", "step", "pitch", "velocity", "duration", "legato"],
+      "properties": {"id": {"type": "integer", "minimum": 0}, "step": {"type": "integer", "minimum": 0}, "pitch": {"type": "integer", "minimum": 0, "maximum": 127}, "velocity": {"type": "integer", "minimum": 1, "maximum": 127}, "duration": {"type": "integer", "minimum": 1}, "legato": {"type": "boolean"}}, "additionalProperties": false
+    },
+    "PresetEntry": {
+      "type": "object", "required": ["id", "name", "bank", "category"],
+      "properties": {"id": {"type": "string"}, "name": {"type": "string"}, "bank": {"type": "string"}, "category": {"type": "string"}}, "additionalProperties": false
+    },
+    "RangeControl": {
+      "type": "object", "required": ["id", "label", "kind", "min", "max", "scale"],
+      "properties": {"id": {"type": "string"}, "label": {"type": "string"}, "kind": {"enum": ["fader", "knob", "toggle"]}, "min": {"type": "number"}, "max": {"type": "number"}, "scale": {"enum": ["linear", "log"]}, "unit": {"type": "string"}, "read_only": {"type": "boolean"}}, "additionalProperties": false
+    },
+    "StepControl": {
+      "type": "object", "required": ["id", "label", "kind", "step_count"],
+      "properties": {"id": {"type": "string"}, "label": {"type": "string"}, "kind": {"const": "step_sequencer"}, "step_count": {"type": "integer", "minimum": 1}, "read_only": {"type": "boolean"}}, "additionalProperties": false
+    },
+    "TriggerControl": {
+      "type": "object", "required": ["id", "label", "kind"],
+      "properties": {"id": {"type": "string"}, "label": {"type": "string"}, "kind": {"const": "trigger"}, "read_only": {"type": "boolean"}}, "additionalProperties": false
+    },
+    "PianoRollControl": {
+      "type": "object", "required": ["id", "label", "kind", "step_count", "pitch_min", "pitch_max", "voices"],
+      "properties": {"id": {"type": "string"}, "label": {"type": "string"}, "kind": {"const": "piano_roll"}, "step_count": {"type": "integer", "minimum": 1}, "pitch_min": {"type": "integer", "minimum": 0, "maximum": 127}, "pitch_max": {"type": "integer", "minimum": 0, "maximum": 127}, "voices": {"type": "integer", "minimum": 1, "maximum": 4}, "read_only": {"type": "boolean"}}, "additionalProperties": false
+    },
+    "DrumRowDefinition": {
+      "type": "object", "required": ["id", "label", "note"],
+      "properties": {"id": {"type": "string"}, "label": {"type": "string"}, "note": {"type": "integer", "minimum": 0, "maximum": 127}}, "additionalProperties": false
+    },
+    "DrumGridControl": {
+      "type": "object", "required": ["id", "label", "kind", "kit", "step_count", "rows"],
+      "properties": {"id": {"type": "string"}, "label": {"type": "string"}, "kind": {"const": "drum_grid"}, "kit": {"type": "string"}, "step_count": {"type": "integer", "minimum": 1}, "rows": {"type": "array", "items": {"$ref": "#/$defs/DrumRowDefinition"}}, "read_only": {"type": "boolean"}}, "additionalProperties": false
+    },
+    "AdsrParameter": {
+      "type": "object", "required": ["name", "control", "min", "max", "scale", "unit"],
+      "properties": {"name": {"enum": ["attack", "decay", "sustain", "release"]}, "control": {"type": "string"}, "min": {"type": "number"}, "max": {"type": "number"}, "scale": {"enum": ["linear", "log"]}, "unit": {"type": "string"}}, "additionalProperties": false
+    },
+    "AdsrControl": {
+      "type": "object", "required": ["id", "label", "kind", "parameters"],
+      "properties": {"id": {"type": "string"}, "label": {"type": "string"}, "kind": {"const": "adsr"}, "parameters": {"type": "array", "items": {"$ref": "#/$defs/AdsrParameter"}}, "read_only": {"type": "boolean"}}, "additionalProperties": false
+    },
+    "PatternControl": {
+      "type": "object", "required": ["id", "label", "kind", "patterns", "boundaries", "default_boundary"],
+      "properties": {"id": {"type": "string"}, "label": {"type": "string"}, "kind": {"const": "pattern_selector"}, "patterns": {"type": "array", "items": {"type": "string"}}, "boundaries": {"type": "array", "items": {"enum": ["immediate", "beat", "bar", "cycle"]}}, "default_boundary": {"enum": ["immediate", "beat", "bar", "cycle"]}, "read_only": {"type": "boolean"}}, "additionalProperties": false
+    },
+    "PresetControl": {
+      "type": "object", "required": ["id", "label", "kind", "presets", "entries"],
+      "properties": {"id": {"type": "string"}, "label": {"type": "string"}, "kind": {"const": "preset_selector"}, "presets": {"type": "array", "items": {"type": "string"}}, "entries": {"type": "array", "items": {"$ref": "#/$defs/PresetEntry"}}, "read_only": {"type": "boolean"}}, "additionalProperties": false
+    },
+    "PlaneControl": {"oneOf": [{"$ref": "#/$defs/RangeControl"}, {"$ref": "#/$defs/StepControl"}, {"$ref": "#/$defs/TriggerControl"}, {"$ref": "#/$defs/PianoRollControl"}, {"$ref": "#/$defs/DrumGridControl"}, {"$ref": "#/$defs/AdsrControl"}, {"$ref": "#/$defs/PatternControl"}, {"$ref": "#/$defs/PresetControl"}]},
+    "Plane": {
+      "type": "object", "required": ["id", "label", "controls"],
+      "properties": {"id": {"type": "string"}, "label": {"type": "string"}, "layout": {"type": ["string", "null"]}, "roles": {"type": "array", "items": {"type": "string"}}, "read_only_roles": {"type": "array", "items": {"type": "string"}}, "read_only": {"type": "boolean"}, "controls": {"type": "array", "items": {"$ref": "#/$defs/PlaneControl"}}}, "additionalProperties": false
+    },
+    "ProjectedState": {
+      "type": "object", "required": ["name", "values"],
+      "properties": {"name": {"type": "string"}, "role": {"type": ["string", "null"]}, "planes": {"type": "array", "items": {"$ref": "#/$defs/Plane"}}, "values": {"type": "object", "additionalProperties": true}, "controls": {"type": "object", "additionalProperties": true}, "audio": {"oneOf": [{"$ref": "#/$defs/AudioTelemetry"}, {"type": "null"}]}}, "additionalProperties": true
+    },
+    "StateSnapshot": {
+      "type": "object", "required": ["type", "epoch", "revision", "schema_version", "schema_revision", "state"],
+      "properties": {"type": {"const": "state.snapshot"}, "epoch": {"type": "string"}, "revision": {"type": "integer", "minimum": 0}, "schema_version": {"const": 3}, "schema_revision": {"type": "integer", "minimum": 0}, "state": {"$ref": "#/$defs/ProjectedState"}}, "additionalProperties": false
+    },
+    "StateUpdated": {
+      "type": "object", "required": ["type", "epoch", "revision", "schema_version", "schema_revision", "state"],
+      "properties": {"type": {"const": "state.updated"}, "epoch": {"type": "string"}, "revision": {"type": "integer", "minimum": 0}, "schema_version": {"const": 3}, "schema_revision": {"type": "integer", "minimum": 0}, "state": {"$ref": "#/$defs/ProjectedState"}}, "additionalProperties": false
+    },
+    "ControlSet": {"type": "object", "required": ["type", "name", "value"], "properties": {"type": {"const": "control.set"}, "name": {"type": "string"}, "value": {}}, "additionalProperties": false},
+    "StepToggle": {"type": "object", "required": ["type", "plane", "control", "step"], "properties": {"type": {"const": "step.toggle"}, "plane": {"type": "string"}, "control": {"type": "string"}, "step": {"type": "integer", "minimum": 0}}, "additionalProperties": false},
+    "TriggerFire": {"type": "object", "required": ["type", "plane", "control"], "properties": {"type": {"const": "trigger.fire"}, "plane": {"type": "string"}, "control": {"type": "string"}}, "additionalProperties": false},
+    "NoteCreate": {"type": "object", "required": ["type", "plane", "control", "pattern", "step", "pitch", "velocity", "duration"], "properties": {"type": {"const": "note.create"}, "plane": {"type": "string"}, "control": {"type": "string"}, "pattern": {"type": "integer", "minimum": 0}, "step": {"type": "integer", "minimum": 0}, "pitch": {"type": "integer", "minimum": 0, "maximum": 127}, "velocity": {"type": "integer", "minimum": 1, "maximum": 127}, "duration": {"type": "integer", "minimum": 1}, "legato": {"type": "boolean"}}, "additionalProperties": false},
+    "NoteUpdate": {"type": "object", "required": ["type", "plane", "control", "pattern", "id", "step", "pitch", "velocity", "duration"], "properties": {"type": {"const": "note.update"}, "plane": {"type": "string"}, "control": {"type": "string"}, "pattern": {"type": "integer", "minimum": 0}, "id": {"type": "integer", "minimum": 0}, "step": {"type": "integer", "minimum": 0}, "pitch": {"type": "integer", "minimum": 0, "maximum": 127}, "velocity": {"type": "integer", "minimum": 1, "maximum": 127}, "duration": {"type": "integer", "minimum": 1}, "legato": {"type": "boolean"}}, "additionalProperties": false},
+    "NoteDelete": {"type": "object", "required": ["type", "plane", "control", "pattern", "id"], "properties": {"type": {"const": "note.delete"}, "plane": {"type": "string"}, "control": {"type": "string"}, "pattern": {"type": "integer", "minimum": 0}, "id": {"type": "integer", "minimum": 0}}, "additionalProperties": false},
+    "DrumHitToggle": {"type": "object", "required": ["type", "plane", "control", "pattern", "row", "step"], "properties": {"type": {"const": "drum.hit.toggle"}, "plane": {"type": "string"}, "control": {"type": "string"}, "pattern": {"type": "integer", "minimum": 0}, "row": {"type": "string"}, "step": {"type": "integer", "minimum": 0}}, "additionalProperties": false},
+    "DrumHitVelocity": {"type": "object", "required": ["type", "plane", "control", "pattern", "row", "step", "velocity"], "properties": {"type": {"const": "drum.hit.velocity"}, "plane": {"type": "string"}, "control": {"type": "string"}, "pattern": {"type": "integer", "minimum": 0}, "row": {"type": "string"}, "step": {"type": "integer", "minimum": 0}, "velocity": {"type": "integer", "minimum": 1, "maximum": 127}}, "additionalProperties": false},
+    "DrumMute": {"type": "object", "required": ["type", "plane", "control", "row", "muted"], "properties": {"type": {"const": "drum.mute"}, "plane": {"type": "string"}, "control": {"type": "string"}, "row": {"type": "string"}, "muted": {"type": "boolean"}}, "additionalProperties": false},
+    "PatternSelect": {"type": "object", "required": ["type", "plane", "control", "pattern", "boundary"], "properties": {"type": {"const": "pattern.select"}, "plane": {"type": "string"}, "control": {"type": "string"}, "pattern": {"type": "integer", "minimum": 0}, "boundary": {"enum": ["immediate", "beat", "bar", "cycle"]}}, "additionalProperties": false},
+    "AdsrSet": {"type": "object", "required": ["type", "plane", "control", "parameter", "value"], "properties": {"type": {"const": "adsr.set"}, "plane": {"type": "string"}, "control": {"type": "string"}, "parameter": {"enum": ["attack", "decay", "sustain", "release"]}, "value": {"type": "number"}}, "additionalProperties": false},
+    "PresetSelect": {"type": "object", "required": ["type", "plane", "control", "preset"], "properties": {"type": {"const": "preset.select"}, "plane": {"type": "string"}, "control": {"type": "string"}, "preset": {"type": ["integer", "string"]}}, "additionalProperties": false},
+    "Message": {"oneOf": [
+      {"$ref": "#/$defs/Hello"}, {"$ref": "#/$defs/HelloAccepted"}, {"$ref": "#/$defs/ProtocolIncompatible"}, {"$ref": "#/$defs/Authenticate"}, {"$ref": "#/$defs/Session"}, {"$ref": "#/$defs/ErrorMessage"}, {"$ref": "#/$defs/StateSnapshot"}, {"$ref": "#/$defs/StateUpdated"},
+      {"$ref": "#/$defs/ControlSet"}, {"$ref": "#/$defs/StepToggle"}, {"$ref": "#/$defs/TriggerFire"}, {"$ref": "#/$defs/NoteCreate"}, {"$ref": "#/$defs/NoteUpdate"}, {"$ref": "#/$defs/NoteDelete"}, {"$ref": "#/$defs/DrumHitToggle"}, {"$ref": "#/$defs/DrumHitVelocity"}, {"$ref": "#/$defs/DrumMute"}, {"$ref": "#/$defs/PatternSelect"}, {"$ref": "#/$defs/AdsrSet"}, {"$ref": "#/$defs/PresetSelect"}
+    ]}
+  }
+}

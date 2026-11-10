@@ -1,0 +1,6 @@
+{
+  "name": "missing-entry",
+  "version": "1.0.0",
+  "lua_host_api": ">=1.0.0 <2.0.0",
+  "capabilities": ["graph.core"]
+}

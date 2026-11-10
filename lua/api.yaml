@@ -1,0 +1,248 @@
+{
+  "contract": "meldritch-lua-host-api",
+  "version": "1.0.0",
+  "language": "Lua 5.4",
+  "defaults": {
+    "thread": "control-owner",
+    "phase": ["application-load", "control-loop"],
+    "errors": "Invalid arguments or unavailable capabilities raise a Lua error; callbacks report through bounded host diagnostics.",
+    "mutable_state_owner": "engine"
+  },
+  "capabilities": [
+    {"id": "graph.core", "version": "1.0.0", "summary": "Graphs, modules, subpatches, ports, parameters, cables, normalizations and controls."},
+    {"id": "instrument.core", "version": "1.0.0", "summary": "Instrument facade, screens, navigation, actions and performance declarations."},
+    {"id": "audio.modules", "version": "1.0.0", "summary": "Contract-discovered DSP modules and prepared graph compilation."},
+    {"id": "midi.routing", "version": "1.0.0", "summary": "MIDI inputs, mappings, buttons, packets, polyphony and named-port processors."},
+    {"id": "sequencer.core", "version": "1.0.0", "summary": "Tracks, patterns, scenes, arrangement, timeline, transport and logical notes."},
+    {"id": "sequencer.persistence.v2", "version": "1.0.0", "summary": "Failure-safe version-2 Lua sequencer save and restore with stable track identity."},
+    {"id": "events.subscription", "version": "1.0.0", "summary": "Control-thread retained and screen-scoped sequencer event subscriptions."},
+    {"id": "samples.bank", "version": "1.0.0", "summary": "Pinned remote, Strudel and project-relative local sample banks."},
+    {"id": "vst3.host", "version": "1.0.0", "summary": "VST3 discovery, instruments/effects, parameters, state, presets and editor requests."},
+    {"id": "web.performance", "version": "1.0.0", "summary": "Bounded HTTP/WebSocket server, roles, credentials and semantic UI planes."},
+    {"id": "ui.control-surfaces", "version": "1.0.0", "summary": "Knobs, faders, toggles, triggers, step grids, piano rolls, drums, ADSR, patterns and presets."},
+    {"id": "hardware.apc", "version": "1.0.0", "summary": "Lua-authored APC mappings and feedback projections."},
+    {"id": "hardware.stream-deck", "version": "1.0.0", "summary": "Lua-authored Stream Deck pages, buttons and actions."}
+  ],
+  "types": {
+    "Endpoint": {"kind": "record", "fields": {"module": "string", "port": "string"}},
+    "ControlTarget": {"kind": "record", "fields": {"module": "string", "parameter": "string"}},
+    "MidiSource": {"kind": "record", "fields": {"notes": "Endpoint"}},
+    "HostCapability": {"kind": "record", "fields": {"id": "string", "version": "string"}},
+    "SequencerState": {"kind": "record", "fields": {"step": "integer", "pattern": "integer", "viewed_pattern": "integer", "position": "number", "playing": "boolean"}},
+    "ApplicationManifest": {"kind": "record", "fields": {"name": "string", "version": "string", "entry": "string", "lua_host_api": "string", "capabilities": "string[]", "libraries": "string[]?", "assets": "string[]?", "requirements": "table?"}}
+  },
+  "namespaces": [
+    {
+      "name": "meldritch",
+      "capability": "graph.core",
+      "operations": [
+        {"name": "host_api_version", "kind": "function", "arguments": [], "returns": ["string"], "phase": ["application-manifest", "application-load", "control-loop"], "mutable_state_owner": "none"},
+        {"name": "host_capabilities", "kind": "function", "arguments": [], "returns": ["HostCapability[]"], "phase": ["application-manifest", "application-load", "control-loop"], "mutable_state_owner": "none"},
+        {"name": "graph", "kind": "function", "arguments": [], "returns": ["Graph"]},
+        {"name": "subpatch", "kind": "function", "arguments": ["name:string"], "returns": ["Subpatch"]},
+        {"name": "instrument", "kind": "function", "arguments": ["name:string"], "returns": ["Instrument"]},
+        {"name": "include", "kind": "function", "arguments": ["project_relative_path:string"], "returns": ["any"], "phase": ["application-load"], "mutable_state_owner": "application", "notes": "Canonicalized path must remain within the application root."},
+        {"name": "samples", "kind": "function", "arguments": ["spec:SampleBankSpec"], "returns": ["SampleBank"], "capability": "samples.bank"},
+        {"name": "vst3_plugins", "kind": "function", "arguments": ["paths:string[]?"], "returns": ["Vst3Descriptor[]"], "capability": "vst3.host"},
+        {"name": "event_ui", "kind": "function", "arguments": [], "returns": ["EventUiState"], "capability": "events.subscription"},
+        {"name": "server", "kind": "function", "arguments": ["spec:ServerSpec"], "returns": ["WebServer"], "capability": "web.performance"}
+      ]
+    },
+    {
+      "name": "Graph",
+      "capability": "graph.core",
+      "operations": [
+        {"name": "devices", "kind": "method", "arguments": ["spec:DevicePreferences"], "returns": ["self"]},
+        {"name": "control_surface", "kind": "method", "arguments": ["spec:ControlSurface"], "returns": ["self"]},
+        {"name": "module", "kind": "method", "arguments": ["id:string", "kind:string", "values:table?", "runtime:any?"], "returns": ["Module"]},
+        {"name": "connect", "kind": "method", "arguments": ["source:Endpoint", "destination:Endpoint"], "returns": ["self"]},
+        {"name": "normalize", "kind": "method", "arguments": ["source:Endpoint", "destination:Endpoint"], "returns": ["self"]},
+        {"name": "input", "kind": "method", "arguments": ["name:string", "destination:Endpoint", "additional:Endpoint..."], "returns": ["Endpoint"]},
+        {"name": "output", "kind": "method", "arguments": ["name:string", "source:Endpoint"], "returns": ["Endpoint"]},
+        {"name": "parameter", "kind": "method", "arguments": ["name:string", "module:string", "parameter:string"], "returns": ["ControlTarget"]},
+        {"name": "instance", "kind": "method", "arguments": ["id:string", "definition:Subpatch", "values:table?"], "returns": ["Module"]},
+        {"name": "control", "kind": "method", "arguments": ["id:string", "module:string", "parameter:string", "range:ControlRange"], "returns": ["ControlTarget"]},
+        {"name": "midi_cc", "kind": "method", "arguments": ["control_id:string", "channel:integer", "number:integer"], "returns": ["self"], "capability": "midi.routing"},
+        {"name": "midi_notes", "kind": "method", "arguments": ["channel:integer", "pitch_control:string", "gate_control:string", "velocity_control:string?"], "returns": ["self"], "capability": "midi.routing"},
+        {"name": "midi_poly", "kind": "method", "arguments": ["channel:integer", "voices:table[]", "overflow:string?"], "returns": ["self"], "capability": "midi.routing"},
+        {"name": "screen", "kind": "method", "arguments": ["id:string", "title:string"], "returns": ["Screen"]},
+        {"name": "navigation", "kind": "method", "arguments": ["spec:NavigationSpec"], "returns": ["Navigation"]}
+      ]
+    },
+    {
+      "name": "ModuleFacade",
+      "capability": "audio.modules",
+      "operations": [
+        {"name": "devices", "kind": "method", "arguments": ["spec:DevicePreferences"], "returns": ["self"]},
+        {"name": "control_surface", "kind": "method", "arguments": ["spec:ControlSurface"], "returns": ["self"]},
+        {"name": "connect", "kind": "method", "arguments": ["source:Endpoint", "destination:Endpoint"], "returns": ["self"]},
+        {"name": "subpatch", "kind": "method", "arguments": ["label:string"], "returns": ["SubpatchInstance"]},
+        {"name": "oscillator", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "lfo", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "noise", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "lowpass", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "svf", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "drive", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "ducker", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "delay", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "stereo_delay", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "stereo_compressor", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "envelope_follower", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "compressor", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "plaits", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "adsr", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "vca", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "constant", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "switch", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "multiply", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "affine", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "gain", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "mute", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "mixer", "kind": "method", "arguments": ["values:table?"], "returns": ["Module"]},
+        {"name": "sample_player", "kind": "method", "arguments": ["values:table"], "returns": ["Module"], "capability": "samples.bank"},
+        {"name": "sequencer", "kind": "method", "arguments": ["values:SequencerSpec"], "returns": ["Sequencer"], "capability": "sequencer.core"},
+        {"name": "vst3", "kind": "method", "arguments": ["values:Vst3Spec"], "returns": ["Vst3Handle"], "capability": "vst3.host"},
+        {"name": "vst3_effect", "kind": "method", "arguments": ["values:Vst3Spec"], "returns": ["Vst3Handle"], "capability": "vst3.host"},
+        {"name": "vst3_bank", "kind": "method", "arguments": ["values:Vst3BankSpec"], "returns": ["Vst3Bank"], "capability": "vst3.host"},
+        {"name": "vst3_managed_bank", "kind": "method", "arguments": ["values:Vst3ManagedBankSpec"], "returns": ["Vst3Bank"], "capability": "vst3.host"}
+      ]
+    },
+    {
+      "name": "Instrument",
+      "capability": "instrument.core",
+      "operations": [
+        {"name": "midi_input", "kind": "method", "arguments": ["spec:MidiInputSpec"], "returns": ["MidiSource"], "capability": "midi.routing"},
+        {"name": "arpeggiator", "kind": "method", "arguments": ["spec:ArpeggiatorSpec"], "returns": ["MidiSource"], "capability": "midi.routing"},
+        {"name": "key_lock", "kind": "method", "arguments": ["spec:KeyLockSpec"], "returns": ["MidiSource"], "capability": "midi.routing"},
+        {"name": "note_source", "kind": "method", "arguments": ["source:Endpoint"], "returns": ["self"], "capability": "midi.routing"},
+        {"name": "voice_mode", "kind": "method", "arguments": ["mode:string"], "returns": ["self"]},
+        {"name": "connect", "kind": "method", "arguments": ["source:Endpoint", "destination:Endpoint"], "returns": ["self"]},
+        {"name": "control", "kind": "method", "arguments": ["label:string", "target:ControlTarget", "range:ControlRange"], "returns": ["ControlTarget"]},
+        {"name": "screen", "kind": "method", "arguments": ["id:string", "title:string"], "returns": ["Screen"]},
+        {"name": "navigation", "kind": "method", "arguments": ["spec:NavigationSpec"], "returns": ["Navigation"]},
+        {"name": "action", "kind": "method", "arguments": ["label:string", "callback:function"], "returns": ["Action"]},
+        {"name": "on_midi_button", "kind": "method", "arguments": ["spec:MidiButtonSpec", "callback:function"], "returns": ["self"], "capability": "midi.routing"},
+        {"name": "on_midi_packet", "kind": "method", "arguments": ["spec:MidiPacketSpec", "callback:function"], "returns": ["self"], "capability": "midi.routing"},
+        {"name": "performance", "kind": "method", "arguments": ["spec:PerformanceSpec"], "returns": ["self"]}
+      ]
+    },
+    {
+      "name": "Sequencer",
+      "capability": "sequencer.core",
+      "operations": [
+        {"name": "track", "kind": "method", "arguments": ["name:string"], "returns": ["Track"]},
+        {"name": "pattern", "kind": "method", "arguments": ["name:string"], "returns": ["Pattern"]},
+        {"name": "note_track", "kind": "method", "arguments": ["spec:NoteTrackSpec"], "returns": ["Track"]},
+        {"name": "drum_kit", "kind": "method", "arguments": ["spec:DrumKitSpec"], "returns": ["DrumKit"]},
+        {"name": "steps", "kind": "method", "arguments": ["track:string", "values:number[]"], "returns": ["self"]},
+        {"name": "logical_notes", "kind": "method", "arguments": ["track:string", "events:NoteEvent[]", "length:integer"], "returns": ["self"]},
+        {"name": "compose_pattern", "kind": "method", "arguments": ["name:string", "selections:table"], "returns": ["Pattern"]},
+        {"name": "duplicate_pattern", "kind": "method", "arguments": ["from:string", "to:string"], "returns": ["Pattern"]},
+        {"name": "copy_pattern", "kind": "method", "arguments": ["from:string|integer", "to:string|integer"], "returns": ["self"]},
+        {"name": "switch_pattern", "kind": "method", "arguments": ["pattern:string|integer", "boundary:string?"], "returns": ["self"]},
+        {"name": "view_pattern", "kind": "method", "arguments": ["pattern:string|integer"], "returns": ["self"]},
+        {"name": "scene", "kind": "method", "arguments": ["name:string", "selections:table"], "returns": ["Scene"]},
+        {"name": "arrangement", "kind": "method", "arguments": ["sections:table[]"], "returns": ["self"]},
+        {"name": "timeline", "kind": "method", "arguments": [], "returns": ["Timeline"]},
+        {"name": "groove", "kind": "method", "arguments": ["offsets:number[]"], "returns": ["self"]},
+        {"name": "command", "kind": "method", "arguments": ["command:string"], "returns": ["self"]},
+        {"name": "save_project", "kind": "method", "arguments": ["path:string"], "returns": [], "capability": "sequencer.persistence.v2", "notes": "Writes version 2 state through a temporary file and validates stable track identities on reload."},
+        {"name": "load_project", "kind": "method", "arguments": ["path:string"], "returns": [], "capability": "sequencer.persistence.v2"},
+        {"name": "start", "kind": "method", "arguments": [], "returns": []},
+        {"name": "stop", "kind": "method", "arguments": [], "returns": []},
+        {"name": "restart", "kind": "method", "arguments": [], "returns": []},
+        {"name": "state", "kind": "method", "arguments": [], "returns": ["SequencerState"]},
+        {"name": "event_kinds", "kind": "method", "arguments": [], "returns": ["string[]"], "capability": "events.subscription"},
+        {"name": "event_diagnostics", "kind": "method", "arguments": [], "returns": ["table"], "capability": "events.subscription"},
+        {"name": "on", "kind": "method", "arguments": ["event:string", "callback:function"], "returns": ["Subscription"], "capability": "events.subscription", "notes": "Callback runs on the control owner thread; delivery is bounded and observational."}
+      ]
+    },
+    {
+      "name": "Screen",
+      "capability": "instrument.core",
+      "operations": [
+        {"name": "label", "kind": "method", "arguments": ["text:string"], "returns": ["self"]},
+        {"name": "control", "kind": "method", "arguments": ["label:string", "control:string"], "returns": ["self"]},
+        {"name": "link", "kind": "method", "arguments": ["label:string", "screen:string"], "returns": ["self"]},
+        {"name": "button", "kind": "method", "arguments": ["label:string", "control:string", "value:number"], "returns": ["self"]},
+        {"name": "performance_controls", "kind": "method", "arguments": [], "returns": ["self"]},
+        {"name": "control_focus", "kind": "method", "arguments": [], "returns": ["self"]},
+        {"name": "performance_status", "kind": "method", "arguments": [], "returns": ["self"]},
+        {"name": "arrangement_status", "kind": "method", "arguments": [], "returns": ["self"]},
+        {"name": "pattern_grid", "kind": "method", "arguments": [], "returns": ["self"]},
+        {"name": "transport_status", "kind": "method", "arguments": [], "returns": ["self"]},
+        {"name": "performance_surface", "kind": "method", "arguments": ["spec:PerformanceSurface"], "returns": ["self"]},
+        {"name": "event_activity", "kind": "method", "arguments": ["label:string", "state:EventUiState"], "returns": ["self"]},
+        {"name": "on", "kind": "method", "arguments": ["source:Sequencer", "event:string", "callback:function"], "returns": ["self"], "capability": "events.subscription"},
+        {"name": "on_mount", "kind": "method", "arguments": ["callback:function"], "returns": ["self"]},
+        {"name": "on_unmount", "kind": "method", "arguments": ["callback:function"], "returns": ["self"]}
+      ]
+    },
+    {
+      "name": "WebServer",
+      "capability": "web.performance",
+      "operations": [
+        {"name": "performance", "kind": "method", "arguments": ["name:string"], "returns": ["WebPerformance"]},
+        {"name": "credential", "kind": "method", "arguments": ["token:string", "role:string"], "returns": ["self"], "notes": "Tokens are capabilities and must contain at least 12 characters."}
+      ]
+    },
+    {
+      "name": "WebPerformance",
+      "capability": "web.performance",
+      "operations": [
+        {"name": "plane", "kind": "method", "arguments": ["spec:PlaneSpec"], "returns": ["WebPlane"]},
+        {"name": "set", "kind": "method", "arguments": ["name:string", "value:any"], "returns": []},
+        {"name": "value", "kind": "method", "arguments": ["name:string"], "returns": ["any"]},
+        {"name": "control", "kind": "method", "arguments": ["spec:ControlSpec"], "returns": ["self"]},
+        {"name": "role", "kind": "method", "arguments": ["name:string", "spec:RoleSpec"], "returns": ["self"]},
+        {"name": "assign", "kind": "method", "arguments": ["role:string", "controls:string[]|string"], "returns": ["self"]},
+        {"name": "assign_plane", "kind": "method", "arguments": ["role:string", "plane:string", "read_only:boolean?"], "returns": ["self"]}
+      ]
+    },
+    {
+      "name": "WebPlane",
+      "capability": "ui.control-surfaces",
+      "operations": [
+        {"name": "step_sequencer", "kind": "method", "arguments": ["spec:StepSequencerSpec"], "returns": ["self"]},
+        {"name": "piano_roll", "kind": "method", "arguments": ["spec:PianoRollSpec"], "returns": ["self"]},
+        {"name": "drum_grid", "kind": "method", "arguments": ["spec:DrumGridSpec"], "returns": ["self"]},
+        {"name": "pattern_selector", "kind": "method", "arguments": ["spec:PatternSelectorSpec"], "returns": ["self"]},
+        {"name": "preset_selector", "kind": "method", "arguments": ["spec:PresetSelectorSpec"], "returns": ["self"]},
+        {"name": "adsr", "kind": "method", "arguments": ["spec:AdsrSpec"], "returns": ["self"]},
+        {"name": "trigger", "kind": "method", "arguments": ["spec:TriggerSpec"], "returns": ["self"]}
+      ]
+    },
+    {
+      "name": "SampleBank",
+      "capability": "samples.bank",
+      "operations": [
+        {"name": "load", "kind": "method", "arguments": ["name:string", "variant:integer"], "returns": ["PreparedSample"], "phase": ["application-load", "control-loop"], "notes": "Network/filesystem and decoding remain outside realtime processing."}
+      ]
+    },
+    {
+      "name": "Vst3Handle",
+      "capability": "vst3.host",
+      "operations": [
+        {"name": "descriptor", "kind": "method", "arguments": [], "returns": ["Vst3Descriptor"]},
+        {"name": "parameters", "kind": "method", "arguments": [], "returns": ["Vst3Parameter[]"]},
+        {"name": "parameter", "kind": "method", "arguments": ["id:integer|string"], "returns": ["ControlTarget"]},
+        {"name": "parameter_info", "kind": "method", "arguments": ["id:integer|string"], "returns": ["Vst3Parameter"]},
+        {"name": "set_parameter", "kind": "method", "arguments": ["id:integer|string", "value:number"], "returns": []},
+        {"name": "load_state", "kind": "method", "arguments": ["bytes:integer[]"], "returns": []},
+        {"name": "open_editor", "kind": "method", "arguments": [], "returns": []},
+        {"name": "modulate", "kind": "method", "arguments": ["id:integer|string", "source:Endpoint", "range:table?"], "returns": ["self"]},
+        {"name": "connect_track", "kind": "method", "arguments": ["track:Track"], "returns": ["self"]},
+        {"name": "connect_drum_kit", "kind": "method", "arguments": ["kit:DrumKit"], "returns": ["self"]}
+      ]
+    }
+  ],
+  "persistence": {
+    "sequencer": {
+      "format": "lua-table",
+      "version": 2,
+      "identity": "Saved track identities must exactly match the loaded application.",
+      "authority": "Engine sequencer retained state",
+      "write": "Temporary file followed by replacement; failed writes must not truncate the last valid state."
+    }
+  }
+}

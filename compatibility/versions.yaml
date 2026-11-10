@@ -1,0 +1,14 @@
+{
+  "contract_suite": 1,
+  "lua_host_api": {
+    "current": "1.0.0",
+    "supported": ">=1.0.0 <2.0.0",
+    "artifact": "meldritch-lua-contract-1.0.0.tar.gz"
+  },
+  "web_protocol": {
+    "current": "1.0.0",
+    "supported": ">=1.0.0 <2.0.0",
+    "wire_schema_version": 3,
+    "artifact": "meldritch-web-contract-1.0.0.tar.gz"
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "type":"state.snapshot","epoch":"fixture-epoch","revision":1,"schema_version":3,"schema_revision":1,
+  "state":{"name":"Fixture","planes":[{"id":"main","label":"Main","controls":[{"id":"cutoff","label":"Cutoff","kind":"knob","min":20,"max":20000,"scale":"log"}]}],"values":{"main/cutoff":440},"audio":null}
+}
