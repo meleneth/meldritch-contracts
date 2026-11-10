@@ -139,6 +139,23 @@ def validate_lua() -> int:
         except Invalid:
             continue
         raise Invalid(f"invalid Lua fixture unexpectedly passed: {path.name}")
+    catalog_schema = load(ROOT / "lua/schemas/library-catalog.schema.json")
+    for path in sorted((ROOT / "fixtures/lua/catalog/valid").glob("*.json")):
+        catalog = load(path)
+        validate(catalog, catalog_schema, catalog_schema, path.name)
+        identifiers = [item["id"] for item in catalog["libraries"]]
+        if len(identifiers) != len(set(identifiers)):
+            raise Invalid(f"{path.name}: duplicate library identifier")
+    for path in sorted((ROOT / "fixtures/lua/catalog/invalid").glob("*.json")):
+        catalog = load(path)
+        try:
+            validate(catalog, catalog_schema, catalog_schema, path.name)
+            identifiers = [item["id"] for item in catalog.get("libraries", [])]
+            if len(identifiers) != len(set(identifiers)):
+                raise Invalid(f"{path.name}: duplicate library identifier")
+        except Invalid:
+            continue
+        raise Invalid(f"invalid Lua catalog fixture unexpectedly passed: {path.name}")
     return len(capability_ids)
 
 

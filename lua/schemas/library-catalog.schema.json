@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://meldritch.dev/contracts/lua/library-catalog.schema.json",
+  "title": "Meldritch Lua library catalog",
+  "type": "object",
+  "required": ["catalog_version", "libraries"],
+  "properties": {
+    "catalog_version": {"const": 1},
+    "libraries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "version", "entry", "lua_host_api", "sha256"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$"},
+          "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+          "entry": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+\\.lua$"},
+          "lua_host_api": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

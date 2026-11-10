@@ -1,0 +1,12 @@
+{
+  "catalog_version": 1,
+  "libraries": [
+    {
+      "id": "meldritch.example",
+      "version": "1.0.0",
+      "entry": "../example.lua",
+      "lua_host_api": ">=1.0.0 <2.0.0",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ]
+}

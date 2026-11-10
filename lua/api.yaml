@@ -29,7 +29,9 @@
     "MidiSource": {"kind": "record", "fields": {"notes": "Endpoint"}},
     "HostCapability": {"kind": "record", "fields": {"id": "string", "version": "string"}},
     "SequencerState": {"kind": "record", "fields": {"step": "integer", "pattern": "integer", "viewed_pattern": "integer", "position": "number", "playing": "boolean"}},
-    "ApplicationManifest": {"kind": "record", "fields": {"name": "string", "version": "string", "entry": "string", "lua_host_api": "string", "capabilities": "string[]", "libraries": "string[]?", "assets": "string[]?", "requirements": "table?"}}
+    "ApplicationManifest": {"kind": "record", "fields": {"name": "string", "version": "string", "entry": "string", "lua_host_api": "string", "capabilities": "string[]", "libraries": "string[]?", "assets": "string[]?", "requirements": "table?"}},
+    "LibraryCatalog": {"kind": "record", "fields": {"catalog_version": "integer", "libraries": "LibraryDefinition[]"}},
+    "LibraryDefinition": {"kind": "record", "fields": {"id": "string", "version": "semver", "entry": "relative-lua-path", "lua_host_api": "semver-range", "sha256": "lowercase-hex"}}
   },
   "namespaces": [
     {
